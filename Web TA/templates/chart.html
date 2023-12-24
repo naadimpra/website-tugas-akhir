@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block title %}Traffic Volume Chart{% endblock %}
+
+{% block content %}
+    <div class="container-fluid px-4">
+        <br></br>
+        <h1 class="mb-4">Traffic Volume Chart - Last 24 Hours</h1>
+        <canvas id="trafficChart" width="800" height="400"></canvas>
+    </div>
+
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Access the data passed from Flask
+            var chartData = {{ chart_data|tojson|safe }};
+        
+            // Extract date_time and traffic_volume for Chart.js
+            var labels = chartData.map(entry => entry[0]);
+            var data = chartData.map(entry => entry[1]);
+        
+            // Create a line chart using Chart.js
+            var ctx = document.getElementById('trafficChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Traffic Volume',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    animation: {
+                        duration: 2000, // Set the duration of the animation in milliseconds
+                        easing: 'easeInOutQuart' // Set the easing function for the animation
+                    },
+                    scales: {
+                        x: [{
+                            type: 'time',
+                            time: {
+                                unit: 'hour'
+                            }
+                        }],
+                        y: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        });        
+    </script>
+    
+{% endblock %}

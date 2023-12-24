@@ -1,0 +1,150 @@
+{% extends "layout.html" %}
+
+{% block title %}Insert Data{% endblock %}
+
+{% block content %}
+    <main>
+        <div class="container">
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header"><h3 class="text-center font-weight-light">Insert New Data</h3></div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('insert') }}">
+                        <!-- Form fields with template styling classes -->
+                        <!-- Example: -->
+                        <div class="form-floating mb-4">
+                            <input class="form-control" id="waktu" name="date_time" type="text" placeholder="YYYY-MM-DD hh:mm:ss" required>
+                            <label for="date_time">Date and Time</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="text" id="is_holiday" name="is_holiday" placeholder="is_holiday" required>
+                            <label for="is_holiday">Holiday Name</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="number" name="air_pollution_index" id="air_pollution_index" placeholder="air_pollution_index" required>
+                            <label for="air_pollution_index">Air Pollution Index</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="number" id="humidity" name="humidity" placeholder="humidity" required>
+                            <label for="humidity">Humidity</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="number" id="wind_speed" name="wind_speed" placeholder="wind_speed" required>
+                            <label for="wind_speed">Wind Speed</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="number" id="wind_direction" name="wind_direction" placeholder="wind_direction" required>
+                            <label for="wind_direction">Wind Direction</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="number" id="visibility_in_miles" name="visibility_in_miles" placeholder="visibility_in_miles" required>
+                            <label for="visibility_in_miles">Visibility in Miles</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="number" id="dew_point" name="dew_point" placeholder="dew_point" required>
+                            <label for="dew_point">Dew Point</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="number" id="temperature" name="temperature" placeholder="temperature" required>
+                            <label for="temperature">Temperature</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="number" id="rain_p_h" name="rain_p_h" placeholder="rain_p_h" required>
+                            <label for="rain_p_h">Rain (mm/h)</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="number" id="snow_p_h" name="snow_p_h" placeholder="snow_p_h" required>
+                            <label for="snow_p_h">Snow (mm/h)</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="number" id="clouds_all" name="clouds_all" placeholder="clouds_all" required>
+                            <label for="clouds_all">Clouds</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="text" id="weather_type" name="weather_type" placeholder="weather_type" required>
+                            <label for="weather_type">Weather Type</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="text" id="weather_description" name="weather_description" placeholder="weather_description" required>
+                            <label for="weather_description">Weather Description</label>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input class="form-control" type="number" id="traffic_volume" name="traffic_volume" placeholder="traffic_volume" required>
+                            <label for="traffic_volume">Traffic Volume</label>
+                        </div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                // Get the form element
+                                var form = document.forms[0]; // Assuming this is the first form on the page
+                        
+                                // Add a submit event listener to the form
+                                form.addEventListener('submit', function (event) {
+                                    // Get the input element
+                                    var dateTimeInput = document.getElementById('date_time');
+                        
+                                    // Get the selected date and time value
+                                    var selectedDateTime = new Date(dateTimeInput.value);
+                        
+                                    // Format the selected date and time in 24-hour format with seconds
+                                    var formattedDateTime = selectedDateTime.getFullYear() + '-' +
+                                        ('0' + (selectedDateTime.getMonth() + 1)).slice(-2) + '-' +
+                                        ('0' + selectedDateTime.getDate()).slice(-2) + ' ' +
+                                        ('0' + selectedDateTime.getHours()).slice(-2) + ':' +
+                                        ('0' + selectedDateTime.getMinutes()).slice(-2) + ':' +
+                                        ('0' + selectedDateTime.getSeconds()).slice(-2);
+                        
+                                    // Set the formatted date and time to the input element
+                                    dateTimeInput.value = formattedDateTime;
+                                });
+                            });
+                            function submitForm() {
+                                // Get the form element
+                                var form = document.getElementById('insertForm');
+                    
+                                // Perform your form validation if needed
+                    
+                                // Submit the form using AJAX
+                                fetch(form.action, {
+                                    method: form.method,
+                                    body: new FormData(form)
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        // Show success notification
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Success',
+                                            text: 'Data inserted successfully!',
+                                        });
+                                        
+                                        // You can redirect to another page if needed
+                                        // window.location.href = "/success";
+                                    } else {
+                                        // Show error notification
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error',
+                                            text: 'Failed to insert data. Please try again.',
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                });
+                            }
+                        </script>
+                        
+
+                        <!-- Repeat for other fields -->
+                        
+                        <div class="d-grid">
+                            <input class="btn btn-primary btn-block" type="submit" value="Submit">
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <br></br>
+        </div>
+    </main>
+{% endblock %}

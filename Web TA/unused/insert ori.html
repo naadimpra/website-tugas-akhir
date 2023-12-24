@@ -1,0 +1,58 @@
+
+{% extends "layout.html" %}
+
+{% block title %}Table Data{% endblock %}
+
+{% block content %}
+<body>
+    <h1>Insert New Data</h1>
+    <form method="post" action="{{ url_for('insert') }}">
+        <label for="date_time">Date and Time:</label>
+        <input type="datetime-local" id="date_time" name="date_time" required><br>
+
+        <label for="is_holiday">Holiday Name:</label>
+        <input type="text" id="is_holiday" name="is_holiday" required><br>
+
+        <label for="air_pollution_index">Air Pollution Index:</label>
+        <input type="number" id="air_pollution_index" name="air_pollution_index" required><br>
+
+        <label for="humidity">Humidity:</label>
+        <input type="number" id="humidity" name="humidity" required><br>
+
+        <label for="wind_speed">Wind Speed:</label>
+        <input type="number" id="wind_speed" name="wind_speed" required><br>
+
+        <label for="wind_direction">Wind Direction:</label>
+        <input type="number" id="wind_direction" name="wind_direction" required><br>
+
+        <label for="visibility_in_miles">Visibility in Miles:</label>
+        <input type="number" id="visibility_in_miles" name="visibility_in_miles" required><br>
+
+        <label for="dew_point">Dew Point:</label>
+        <input type="number" id="dew_point" name="dew_point" required><br>
+
+        <label for="temperature">Temperature:</label>
+        <input type="number" id="temperature" name="temperature" required><br>
+
+        <label for="rain_p_h">Rain (mm/h):</label>
+        <input type="number" id="rain_p_h" name="rain_p_h" required><br>
+
+        <label for="snow_p_h">Snow (mm/h):</label>
+        <input type="number" id="snow_p_h" name="snow_p_h" required><br>
+
+        <label for="clouds_all">Clouds:</label>
+        <input type="number" id="clouds_all" name="clouds_all" required><br>
+
+        <label for="weather_type">Weather Type:</label>
+        <input type="text" id="weather_type" name="weather_type" required><br>
+
+        <label for="weather_description">Weather Description:</label>
+        <input type="text" id="weather_description" name="weather_description" required><br>
+
+        <label for="traffic_volume">Traffic Volume:</label>
+        <input type="number" id="traffic_volume" name="traffic_volume" required><br>
+
+        <input type="submit" value="Submit">
+    </form>
+    
+{% endblock %}
