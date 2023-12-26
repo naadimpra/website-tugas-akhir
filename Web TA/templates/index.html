@@ -1,205 +1,99 @@
 {% extends "layout.html" %}
 
-{% block title %}Table Data{% endblock %}
+{% block title %}Forecast Chart{% endblock %}
 
 {% block content %}
+
+    <!-- Add your specific content here -->
+    <br></br>
     <div class="container-fluid px-4">
-        <br></br>
         <!-- Filter Section -->
         <form method="get" action="{{ url_for('index') }}">
-            <label for="filter_column">Filter by Column:</label>
-            <select id="filter_column" name="filter_column">
-                <option value="" {% if filter_column == '' %}selected{% endif %}>All</option>
-                {% for column, label in column_labels.items() %}
-                    <option value="{{ column }}" {% if filter_column == column %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-            <label for="filter_value">Filter Value:</label>
-            <input type="text" id="filter_value" name="filter_value" value="{{ filter_value }}">
-            <input type="submit" value="Apply Filter">
-            <br></br>
-            <input type="hidden" name="sort_column" value="{{ sort_column }}">
-            <input type="hidden" name="sort_order" value="{{ sort_order }}">
-            <input type="hidden" name="rows" value="{{ rowsPerPage }}">
+            <!-- ... (existing filter form code) ... -->
         </form>
-        <!-- ... (unchanged) ... -->
 
         <!-- Data Table -->
         <div class="table-responsive">    
-        <table border="1" class="excel-table">
-            <colgroup>
-                {% for column in columns %}
+            <table border="1" class="excel-table">
+                <colgroup>
                     <col style="width: auto;">
-                {% endfor %}
-            </colgroup>
-            <thead>
-                <tr>
-                    {% for column in columns %}
-                        <th>
-                            <a href="javascript:void(0);" onclick="sortTable('{{ column }}')">
-                                <span style="color: black;">{{ column_labels[column] }}</span>
-                                {% if sort_column == column %}
-                                    {% if sort_order == 'asc' %}
-                                        <span>&uarr;</span>
-                                    {% elif sort_order == 'desc' %}
-                                        <span>&darr;</span>
-                                    {% endif %}
-                                {% else %}
-                                    <span>&uarr;&darr;</span>
-                                {% endif %}
-                            </a>
-                        </th>
-                    {% endfor %}
-                </tr>
-            </thead>            
-            <tbody>
-                {% if data %}
-                    {% for row in data %}
+                    <!-- Add col elements for each column if needed -->
+                </colgroup>
+                <thead>
+                    <tr>
+                        <!-- Adjust the headers based on your data -->
+                        <th>Date and Time</th>
+                        <th>Actual Traffic Volume</th>
+                        <th>Lag 1</th>
+                        <th>Lag 2</th>
+                        <th>Lag 3</th>
+                        <th>Forecasted Traffic Volume</th>
+                    </tr>
+                </thead>            
+                <tbody>
+                    {% for row in result %}
                         <tr>
-                            {% for value in row %}
-                                <td>{{ value }}</td>
-                            {% endfor %}
+                            <!-- Adjust the data cells based on your data structure -->
+                            <td>{{ row['date_time'] }}</td>
+                            <td>{{ row['actual_traffic_volume'] }}</td>
+                            <td>{{ row['lag_1'] }}</td>
+                            <td>{{ row['lag_2'] }}</td>
+                            <td>{{ row['lag_3'] }}</td>
+                            <td>{{ row['forecasted_traffic_volume'] }}</td>
                         </tr>
                     {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="{{ columns|length }}">
-                            {% if filter_column %}
-                                No data found for '{{ filter_value }}' in the '{{ column_labels[filter_column] }}' column. Please try a different filter.
-                            {% else %}
-                                No data found. Please try adjusting your filters.
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
 
-        <!-- Rows per page dropdown -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="d-flex align-items-center">
-                <span class="rows-per-page-label">Rows per page:</span>
-                <select id="rowsPerPage" onchange="changeRowsPerPage()" class="rows-per-page-dropdown">
-                    <option value="5">5</option>
-                    <option value="10" {% if rowsPerPage == 10 %}selected{% endif %}>10</option>
-                    <option value="20" {% if rowsPerPage == 20 %}selected{% endif %}>20</option>
-                </select>
-            </div>
-        
-            <!-- Pagination controls -->
-            <div class="pagination">
-                {% if page > 1 %}
-                    <a href="?page=1&rows={{ rowsPerPage }}{% if filter_column %}&filter_column={{ filter_column }}&filter_value={{ filter_value }}{% endif %}{% if sort_column %}&sort_column={{ sort_column }}&sort_order={{ sort_order }}{% endif %}" class="btn btn-sm btn-primary">First</a>
-                    <span class="pagination-space">  </span>
-                    <a href="?page={{ page - 1 }}&rows={{ rowsPerPage }}{% if filter_column %}&filter_column={{ filter_column }}&filter_value={{ filter_value }}{% endif %}{% if sort_column %}&sort_column={{ sort_column }}&sort_order={{ sort_order }}{% endif %}" class="btn btn-sm btn-primary">Previous</a>
-                    <span class="pagination-space">  </span>
-                {% endif %}
-        
-                <span class="pagination-text">Page</span>
-                <input type="text" id="pageNumber" value="{{ page }}" class="form-control" style="width: 60px; text-align: center;" onblur="updatePage()" onkeydown="handleKeyPress(event)" onkeypress="return event.charCode >= 48 && event.charCode <= 57" pattern="[0-9]*">
-                <span class="pagination-text">of {{ totalPages }}</span>
-        
-                {% if data|length == rowsPerPage and page < totalPages %}
-                    <span class="pagination-space">  </span>
-                    <a href="?page={{ page + 1 }}&rows={{ rowsPerPage }}{% if filter_column %}&filter_column={{ filter_column }}&filter_value={{ filter_value }}{% endif %}{% if sort_column %}&sort_column={{ sort_column }}&sort_order={{ sort_order }}{% endif %}" class="btn btn-sm btn-primary">Next</a>
-                {% endif %}
-        
-                {% if totalPages > 1 and page < totalPages %}
-                    <span class="pagination-space">  </span>
-                    <a href="?page={{ totalPages }}&rows={{ rowsPerPage }}{% if filter_column %}&filter_column={{ filter_column }}&filter_value={{ filter_value }}{% endif %}{% if sort_column %}&sort_column={{ sort_column }}&sort_order={{ sort_order }}{% endif %}" class="btn btn-sm btn-primary">Last</a>
-                {% endif %}
+            <!-- Pagination controls and Rows per page dropdown -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <!-- ... (existing pagination and rows-per-page code) ... -->
             </div>
         </div>
-    <!-- Add this JavaScript at the bottom of your HTML file -->
+
+        <!-- Add any additional elements or styling specific to this page -->
+    </div>
+    <div class="container-fluid px-4">
+        <br></br>
+        <h1 class="mb-4">Forecast Chart</h1>
+        <div style="width: 75%;">
+            <canvas id="forecastChart" width="800" height="400"></canvas>
+        </div>
+    </div>
+
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
-        function sortTable(column) {
-            let url = new URL(window.location.href);
-    
-            // Toggle the sort order if the same column is clicked again
-            let sortOrder = (url.searchParams.get('sort_column') === column && url.searchParams.get('sort_order') === 'asc') ? 'desc' : 'asc';
-    
-            // Update the URL with the new sort parameters
-            url.searchParams.set('sort_column', column);
-            url.searchParams.set('sort_order', sortOrder);
-            url.searchParams.set('page', 1);
-    
-            // Get the current filter values from the URL
-            let filterColumn = url.searchParams.get('filter_column');
-            let filterValue = url.searchParams.get('filter_value');
-    
-            if (filterColumn && filterValue) {
-                url.searchParams.set('filter_column', filterColumn);
-                url.searchParams.set('filter_value', filterValue);
-            }
-    
-            // Get the current rows per page value
-            let rowsPerPage = document.getElementById("rowsPerPage").value;
-            url.searchParams.set('rows', rowsPerPage);
-    
-            // Update the URL in the browser
-            window.location.href = url.toString();
-        }
-    
-        function changeRowsPerPage() {
-            let url = new URL(window.location.href);
-    
-            // Get the current filter values from the URL
-            let filterColumn = url.searchParams.get('filter_column');
-            let filterValue = url.searchParams.get('filter_value');
-    
-            // Get the current sort column and order from the URL
-            let sortColumn = url.searchParams.get('sort_column');
-            let sortOrder = url.searchParams.get('sort_order');
-    
-            // Get the current rows per page value
-            let rowsPerPage = document.getElementById("rowsPerPage").value;
-    
-            // Update the URL with the new rows per page value
-            url.searchParams.set('rows', rowsPerPage);
-    
-            if (filterColumn && filterValue) {
-                url.searchParams.set('filter_column', filterColumn);
-                url.searchParams.set('filter_value', filterValue);
-            }
-    
-            if (sortColumn && sortOrder) {
-                url.searchParams.set('sort_column', sortColumn);
-                url.searchParams.set('sort_order', sortOrder);
-            }
-    
-            // Update the URL in the browser
-            window.location.href = url.toString();
-        }
-        function updatePage() {
-            var pageNumber = document.getElementById("pageNumber").value;
-    
-            // Ensure the input is a valid number
-            if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= {{ totalPages }}) {
-                window.location.href = "?page=" + pageNumber + "&rows={{ rowsPerPage }}{% if filter_column %}&filter_column={{ filter_column }}&filter_value={{ filter_value }}{% endif %}{% if sort_column %}&sort_column={{ sort_column }}&sort_order={{ sort_order }}{% endif %}";
-            }
-        }
-    
-        function handleKeyPress(event) {
-            if (event.key === "Enter") {
-                updatePage();
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', function () {
-            var form = document.forms[0];
-
-            form.addEventListener('submit', function (event) {
-                var dateTimeInput = document.getElementById('date_time');
-                var selectedDateTime = new Date(dateTimeInput.value);
-                var formattedDateTime = selectedDateTime.getFullYear() + '-' +
-                    ('0' + (selectedDateTime.getMonth() + 1)).slice(-2) + '-' +
-                    ('0' + selectedDateTime.getDate()).slice(-2) + ' ' +
-                    ('0' + selectedDateTime.getHours()).slice(-2) + ':' +
-                    ('0' + selectedDateTime.getMinutes()).slice(-2) + ':' +
-                    ('0' + selectedDateTime.getSeconds()).slice(-2);
-
-                dateTimeInput.value = formattedDateTime;
+            // Access the data passed from Flask
+            var forecastLabels = {{ labels | tojson | safe }};
+            var forecastValues = {{ values | tojson | safe }};
+        
+            // Create a line chart using Chart.js
+            var ctx = document.getElementById('forecastChart').getContext('2d');
+            var forecastChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: forecastLabels,
+                    datasets: [{
+                        label: 'Forecasted Traffic Volume',
+                        data: forecastValues,
+                        backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
             });
-        });
-    </script>    
+        });        
+    </script>
 {% endblock %}
