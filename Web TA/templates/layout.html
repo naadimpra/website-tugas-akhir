@@ -89,14 +89,52 @@
         .filter-button {
             padding: 5px;
         }
+        @media screen and (max-width: 768px) {
+            .sb-sidenav {
+                width: 250px;
+                position: fixed;
+                z-index: 1000;
+                top: 0;
+                left: -250px;
+                height: 100vh;
+                overflow-y: auto;
+                background-color: #444445; /* Adjust background color if needed */
+                transition: left 0.3s ease;
+            }
+        
+            .sb-sidenav.collapsed {
+                left: 0;
+            }
+        
+            .sb-topnav .btn-link {
+                display: block;
+            }
+        
+            #layoutSidenav_content {
+                transition: margin-left 0.3s ease;
+            }
+        
+            .sb-sidenav.collapsed ~ #layoutSidenav_content {
+                margin-left: 250px;
+            }
+    
+        .sb-topnav .btn-link {
+            color: #fff; /* Adjust color if needed */
+            margin-right: 10px; /* Space between button and brand */
+        }
     </style>
     {% endblock %}
 </head>
 <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-custom">
+        <!-- Toggle Button for Sidebar, positioned before the brand -->
+        <button class="btn btn-link btn-sm" id="sidebarToggle" href="#!">
+            <i class="fas fa-bars"></i>
+        </button>
+
         <!-- Navbar Brand-->
         <a class="navbar-brand ps-3" href=".">Traffic Forecasting</a>
-        <!-- Sidebar Toggle-->
+        <!-- Rest of the navbar content -->
     </nav>
 
     <div id="layoutSidenav">
@@ -111,19 +149,19 @@
                             Dashboard
                         </a>
                         <a class="nav-link" href=".">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                             Table
                         </a>
                         <a class="nav-link" href="insert">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <div class="sb-nav-link-icon"><i class="fas fa-plus"></i></div>
                             Insert new Data
                         </a>
                         <a class="nav-link" href="predict">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <div class="sb-nav-link-icon"><i class="fas fa-chart-line"></i></div>
                             Forecast
                         </a>
                         <a class="nav-link" href="xai">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <div class="sb-nav-link-icon"><i class="fas fa-question-circle"></i></div>
                             XAI
                         </a>
                         <!-- Add more sidebar items here -->
@@ -155,5 +193,16 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <script>
+        // JavaScript for Toggle Functionality
+        document.querySelector('.navbar-toggler').addEventListener('click', function() {
+            document.getElementById('navbarResponsive').classList.toggle('collapse');
+        });
+
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            var sidebar = document.getElementById('sidenavAccordion');
+            sidebar.classList.toggle('collapsed');
+        });        
+    </script>
 </body>
 </html>
