@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+
+{% block title %}Forecast Chart{% endblock %}
+
+{% block content %}
+
+    <!-- Add your specific content here -->
+    <br></br>
+    <div class="container-fluid px-4">
+        <!-- Filter Section -->
+        <form method="get" action="{{ url_for('index') }}">
+            <!-- ... (existing filter form code) ... -->
+        </form>
+
+        <!-- Data Table -->
+        <div class="table-responsive">    
+            <table border="1" class="excel-table">
+                <colgroup>
+                    <h1 class="mb-4">Forecast</h1>
+                    <col style="width: auto;">
+                    <!-- Add col elements for each column if needed -->
+                </colgroup>
+                <thead>
+                    <tr>
+                        <!-- Adjust the headers based on your data -->
+                        <th>Date and Time</th>
+                        <th>Actual Traffic Volume</th>
+                        <th>Lag 1</th>
+                        <th>Lag 2</th>
+                        <th>Lag 3</th>
+                        <th>Forecasted Traffic Volume</th>
+                    </tr>
+                </thead>            
+                <tbody>
+                    {% for row in result %}
+                        <tr>
+                            <!-- Adjust the data cells based on your data structure -->
+                            <td>{{ row['date_time'] }}</td>
+                            <td>{{ row['actual_traffic_volume'] }}</td>
+                            <td>{{ row['lag_1'] }}</td>
+                            <td>{{ row['lag_2'] }}</td>
+                            <td>{{ row['lag_3'] }}</td>
+                            <td>{{ row['forecasted_traffic_volume'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination controls and Rows per page dropdown -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <!-- ... (existing pagination and rows-per-page code) ... -->
+            </div>
+        </div>
+
+        <!-- Add any additional elements or styling specific to this page -->
+    </div>
+    <div class="container-fluid px-4">
+        <br></br>
+        <div style="width: 75%;">
+            <canvas id="forecastChart" width="800" height="400"></canvas>
+        </div>
+    </div>
+
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Access the data passed from Flask
+            var forecastLabels = {{ labels | tojson | safe }};
+            var forecastValues = {{ values | tojson | safe }};
+        
+            // Create a line chart using Chart.js
+            var ctx = document.getElementById('forecastChart').getContext('2d');
+            var forecastChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: forecastLabels,
+                    datasets: [{
+                        label: 'Forecasted Traffic Volume',
+                        data: forecastValues,
+                        backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        });        
+    </script>
+{% endblock %}
