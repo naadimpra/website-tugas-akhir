@@ -1,20 +1,116 @@
 {% extends "layout.html" %}
 
-{% block title %}Forecast Chart{% endblock %}
+{% block title %}LIME Explanation - Traffic Forecasting{% endblock %}
 
 {% block content %}
     <body>
 
         <colgroup>
             <br></br>
-            <h1 class="mb-4">LIME</h1>
+            <div class="container text-center">
+                <h1 class="mb-4">LIME</h1>
+            </div>
             <col style="width: auto;">
-            <!-- Add col elements for each column if needed -->
         </colgroup>
-        {% for i in shap_plots: %}
-        <iframe srcdoc="{{ shap_plots[i] }}" style="width: 100%; height: 200px; border: none;"></iframe>
+
+        {% for key, lime_output in lime_explanations.items() %}
+            <div class="container mt-4">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <!-- LIME explanation content here -->
+                                {{ lime_output|safe }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% endfor %}
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-12">
+                    <p class="text-center"><small><span style="color: red;">*</span>Note: LIME relies on actual values. If other data is unavailable, LIME processing may be affected.</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">🎯 Your Forecasting Spotlight</h5>
+                            <p>The number below the left orange bar? That's what the model forecasts for this specific case—like how busy a road might be.</p>
+                            <h5 class="card-title">🔍 Forecasting Range Slider</h5>
+                            <p>The orange bar above it? It's like a slider showing the lowest to highest forecasting the model can make. Your forecasting is the spot where the slider stops—giving you a feel for how it stacks up against all possibilities.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Card 2 -->
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">🚀 Boosters (Orange Bars)</h5>
+                            <p>Just like fans cheering to raise the score, these are the details that rev up your forecasting. The longer the bar, the louder the cheer, pushing the forecasting higher.</p>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Card 3 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">🚦 Reducers (Blue Bars)</h5>
+                            <p>These are the cautious whispers, gently tapping the brakes on the forecasting. Blue bars pulling back, saying "Hold on, let's not go too high."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4 and 5 side by side -->
+        <div class="container mt-4">
+            <div class="row">
+                <!-- Card 4 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">🌟 The Middle Graph</h5>
+                            <p>It's a seesaw of influence. The feature names here tell you what's at play, while the bar lengths and directions show if they're boosting or braking, and by how much. For example, "hour" with a longer orange bar means it's a big booster in this case.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">📈 The Right Table</h5>
+                            <p>This is the raw scorecard. It lists each detail with a precise score, like points contributed by each player in a game. The "hour" here is like a player's total points scored throughout the game.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 6 (full width) -->
+        <div class="container mt-4 mb-4">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">🤔 Why the Different Numbers?</h5>
+                            <p>You might notice "hour" has different numbers in the middle graph and the right table. That's because they're playing different roles. In the middle graph, it's about impact—like a single powerful play in the game. On the right, it's about consistency—how that player performs on average over time. The reason the right table might change over iterations is that LIME is recalculating the average influence each time based on new data. It's like updating a player's stats as the season progresses. Remember, each game (forecasting) is unique, and so is each season (the model's overall learning). The numbers reflect different aspects of how "hour" plays into the bigger picture.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-bottom: 30px;"></div>
     </body>
 {% endblock %}

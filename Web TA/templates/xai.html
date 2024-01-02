@@ -1,20 +1,90 @@
 {% extends "layout.html" %}
 
-{% block title %}Forecast Chart{% endblock %}
+{% block title %}SHAP - Traffic Forecasting{% endblock %}
 
 {% block content %}
     <body>
 
         <colgroup>
             <br></br>
-            <h1 class="mb-4">SHAP</h1>
+            <div class="container text-center">
+                <h1 class="mb-4">SHAP</h1>
+            </div>
             <col style="width: auto;">
-            <!-- Add col elements for each column if needed -->
         </colgroup>
+
         {% for i in shap_plots: %}
-        <iframe srcdoc="{{ shap_plots[i] }}" style="width: 100%; height: 200px; border: none;"></iframe>
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <iframe srcdoc="{{ shap_plots[i] }}" style="width: 100%; height: 200px; border: none;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% endfor %}
 
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-12">
+                    <p class="text-center"><small><span style="color: red;">*</span>Note: SHAP relies on actual values. If other data is unavailable, SHAP processing may be affected.</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">🎯 Starting Point (Base Value)</h5>
+                            <p>Think of this as the model's "best guess" before it knows anything specific about the data it's looking at. It's the average prediction if we didn't have any detailed information.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">🔍 Your Specific Prediction (f(x))</h5>
+                            <p>Look at the bold numbers to see what the model thinks for this particular situation. This number comes from adjusting the "best guess" based on the unique information it has.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">🌟 Features Driving Your Prediction</h5>
+                            <p><strong>🔴 Boosters (Red):</strong> These features think, "This situation is special!" and they push the prediction up, away from the average. The longer the red bar, the stronger they're saying, "Expect more than usual!"</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">🌟 Features Driving Your Prediction</h5>
+                            <p><strong>🔵 Reducers (Blue):</strong> On the other hand, these features are the cautious ones. They pull the prediction down, suggesting that things might not be as high as the "best guess". A longer blue bar means they're more certain it should be less.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">🔄 Direction of Influence</h5>
+                            <p>Notice the arrows? They show which way each feature is nudging the prediction. 🔴 Red arrows point right, saying "Go higher!", while 🔵 blue ones point left, whispering "Maybe not that much."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div style="margin-bottom: 30px;"></div>
     </body>
 {% endblock %}

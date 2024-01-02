@@ -9,10 +9,10 @@ connection = pymysql.connect(
     password="",
     database="test_traffic"
 )
-
 # Define the query to fetch the last three rows
-query = "SELECT * FROM ( SELECT * FROM trainsql ORDER BY date_time DESC LIMIT 500 ) AS subquery ORDER BY date_time ASC;"
-#query = 'SELECT * FROM trainsql ORDER BY date_time ASC LIMIT 6'
+query = "SELECT * FROM ( SELECT * FROM trainsql ORDER BY date_time DESC LIMIT 13 ) AS subquery ORDER BY date_time ASC;"
+#query = "SELECT * FROM testsql LIMIT 7"
+#query = 'SELECT * FROM trainsql ORDER BY date_time ASC LIMIT 100'
 # Execute the query and load the result into a DataFrame
 df_raw = pd.read_sql(query, connection)
 
@@ -20,7 +20,6 @@ df_raw = pd.read_sql(query, connection)
 import pandas as pd
 import numpy as np
 import joblib
-import xgboost as xgb
 
 # Load the encoder, scaler, and model
 encoder = joblib.load('encoder.joblib')
@@ -39,7 +38,6 @@ non_numeric_cols = ['is_holiday', 'weather_type', 'weather_description']
 
 # for col in non_numeric_cols:
 #     print(f"Unique values for {col} in df_raw: {df_raw[col].unique()}")
-
 
 # Group by 'date_time' and aggregate: mean for numeric columns, mode for non-numeric columns
 agg_funcs = {col: 'mean' for col in df_raw.columns if col not in non_numeric_cols}
@@ -110,62 +108,74 @@ X = df_scaled.drop(columns=['date_time'])
 X = X.drop(target, axis=1)
 df = pd.concat([date_time, df], axis=1)
 
-# Function to append new row with updated lagged features
-def append_new_row(df, new_prediction, max_lags=3):
-    new_row = df.iloc[-1].copy()  # Copy the last row to use as a base for the new row
-    for i in range(max_lags-1, 0, -1):
-        new_row[f'traffic_volume_lag_{i+1}'] = new_row[f'traffic_volume_lag_{i}']
-    new_row['traffic_volume_lag_1'] = new_prediction
-    new_row['forecasted_traffic_volume'] = np.nan  # Reset the forecasted value
-    return pd.concat([df, pd.DataFrame([new_row], columns=df.columns)], ignore_index=True)
+# # Function to append new row with updated lagged features
+# def append_new_row(df, new_prediction, max_lags=3):
+#     new_row = df.iloc[-1].copy()  # Copy the last row to use as a base for the new row
+#     for i in range(max_lags-1, 0, -1):
+#         new_row[f'traffic_volume_lag_{i+1}'] = new_row[f'traffic_volume_lag_{i}']
+#     new_row['traffic_volume_lag_1'] = new_prediction
+#     new_row['forecasted_traffic_volume'] = np.nan  # Reset the forecasted value
+#     return df.append(new_row, ignore_index=True)
 
-# Initialize DataFrame for dynamic forecasting
-df_dynamic_forecast = X.copy()
-df_dynamic_forecast['forecasted_traffic_volume'] = np.nan
+# # Initialize DataFrame for dynamic forecasting
+# df_dynamic_forecast = X.copy()
+# df_dynamic_forecast['forecasted_traffic_volume'] = np.nan
 
-# Number of steps to forecast
-forecast_steps = 500
+# # Number of steps to forecast
+# forecast_steps = 10
 
-for i in range(forecast_steps):
-    # Predict the traffic volume for the next time step
-    current_prediction = model.predict(df_dynamic_forecast.iloc[i:i+1].drop(columns=['forecasted_traffic_volume']))[0]
-    df_dynamic_forecast.at[df_dynamic_forecast.index[i], 'forecasted_traffic_volume'] = current_prediction
+# for i in range(forecast_steps):
+#     # Predict the traffic volume for the next time step
+#     current_prediction = model.predict(df_dynamic_forecast.iloc[i:i+1].drop(columns=['forecasted_traffic_volume']))[0]
+#     df_dynamic_forecast.at[df_dynamic_forecast.index[i], 'forecasted_traffic_volume'] = current_prediction
 
-    # Append a new row with updated lagged features for the next prediction, if not at the last step
-    if i + 1 < forecast_steps:
-        df_dynamic_forecast = append_new_row(df_dynamic_forecast, current_prediction)
+#     # Append a new row with updated lagged features for the next prediction, if not at the last step
+#     if i + 1 < forecast_steps:
+#         df_dynamic_forecast = append_new_row(df_dynamic_forecast, current_prediction)
 
-# Initialize the DataFrame
-test_date_times = df['date_time'].reset_index(drop=True)
+# # Initialize the DataFrame
+# test_date_times = df['date_time'].reset_index(drop=True)
 
-# Initialize the DataFrame without setting 'date_time' as the index
-df_result = pd.DataFrame({
-    'date_time': test_date_times,
-    'actual_traffic_volume': y.reset_index(drop=True),
-    'traffic_volume_lag_1': np.nan,
-    'traffic_volume_lag_2': np.nan,
-    'traffic_volume_lag_3': np.nan,
-    'forecasted_traffic_volume': df_dynamic_forecast['forecasted_traffic_volume'].reset_index(drop=True)
-})
+# # Initialize the DataFrame without setting 'date_time' as the index
+# df_result = pd.DataFrame({
+#     'date_time': test_date_times,
+#     'actual_traffic_volume': y.reset_index(drop=True),
+#     'lag_1': np.nan,
+#     'lag_2': np.nan,
+#     'lag_3': np.nan,
+#     'forecasted_traffic_volume': df_dynamic_forecast['forecasted_traffic_volume'].reset_index(drop=True)
+# })
 
-# Set the initial lagged values from the historical data
-df_result.loc[0, 'traffic_volume_lag_1'] = df_raw.iloc[-4]['traffic_volume']  # Most recent record
-df_result.loc[0, 'traffic_volume_lag_2'] = df_raw.iloc[-5]['traffic_volume']  # Second most recent record
-df_result.loc[0, 'traffic_volume_lag_3'] = df_raw.iloc[-6]['traffic_volume']  # Third most recent record
+# # Set the initial lagged values from the historical data
+# df_result.loc[0, 'lag_1'] = df_raw.iloc[-4]['traffic_volume']  # Most recent record
+# df_result.loc[0, 'lag_2'] = df_raw.iloc[-5]['traffic_volume']  # Second most recent record
+# df_result.loc[0, 'lag_3'] = df_raw.iloc[-6]['traffic_volume']  # Third most recent record
 
 # # Update the lagged values with the forecasted values in each step
 # for i in range(1, len(df_result)):
-#     df_result.loc[i, 'traffic_volume_lag_1'] = df_result.loc[i - 1, 'actual_traffic_volume']
-#     df_result.loc[i, 'traffic_volume_lag_2'] = df_result.loc[i - 1, 'traffic_volume_lag_1']
-#     df_result.loc[i, 'traffic_volume_lag_3'] = df_result.loc[i - 1, 'traffic_volume_lag_2']
+#     df_result.loc[i, 'lag_1'] = df_result.loc[i - 1, 'actual_traffic_volume']
+#     df_result.loc[i, 'lag_2'] = df_result.loc[i - 1, 'lag_1']
+#     df_result.loc[i, 'lag_3'] = df_result.loc[i - 1, 'lag_2']
 
 # for i in range(1, len(df_result)):
 #     if pd.isna(df_result.loc[i, 'date_time']):
 #         df_result.loc[i, 'date_time'] = df_result.loc[i-1, 'date_time'] + pd.Timedelta(hours=1)
-
+        
 # df_result.dropna(inplace=True)
+# Forecast using the trained model
+# Forecast using the trained model
+forecasted_traffic_volume = model.predict(X)
 
-# # Display the DataFrame
-print(df_raw.columns)
+# Create a DataFrame for the results
+df_result = pd.DataFrame({
+    'date_time': date_time,
+    'actual_traffic_volume': y.values,  # Use y.values to get the underlying NumPy array
+    'lag_1': df['traffic_volume_lag_1'].values,
+    'lag_2': df['traffic_volume_lag_2'].values,
+    'lag_3': df['traffic_volume_lag_3'].values,
+    'forecasted_traffic_volume': forecasted_traffic_volume
+})
 
+# Display the results
+print(df_result)
 

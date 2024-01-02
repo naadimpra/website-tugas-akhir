@@ -12,13 +12,19 @@
                         <!-- Form fields with template styling classes -->
                         <!-- Example: -->
                         <div class="form-floating mb-4">
-                            <input class="form-control" id="waktu" name="date_time" type="text" placeholder="YYYY-MM-DD hh:mm:ss" required>
+                            <!-- Add the datetime picker input field -->
+                            <input class="form-control" id="waktu" name="date_time" type="datetime-local" placeholder="YYYY-MM-DD hh:mm:ss" required>
                             <label for="date_time">Date and Time</label>
                         </div>
-                        <div class="form-floating mb-4">
-                            <input class="form-control" type="text" id="is_holiday" name="is_holiday" placeholder="is_holiday" required>
+                        <div class="form-group">
                             <label for="is_holiday">Holiday Name</label>
+                            <select class="form-control" id="is_holiday" name="is_holiday">
+                                {% for holiday in holiday_options %}
+                                    <option value="{{ holiday }}">{{ holiday }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
+                        <p style="margin:20px;"></p>
                         <div class="form-floating mb-4">
                             <input class="form-control" type="number" name="air_pollution_index" id="air_pollution_index" placeholder="air_pollution_index" required>
                             <label for="air_pollution_index">Air Pollution Index</label>
@@ -59,14 +65,24 @@
                             <input class="form-control" type="number" id="clouds_all" name="clouds_all" placeholder="clouds_all" required>
                             <label for="clouds_all">Clouds</label>
                         </div>
-                        <div class="form-floating mb-4">
-                            <input class="form-control" type="text" id="weather_type" name="weather_type" placeholder="weather_type" required>
+                        <div class="form-group">
                             <label for="weather_type">Weather Type</label>
+                            <select class="form-control" id="weather_type" name="weather_type">
+                                {% for type in weather_type_options %}
+                                    <option value="{{ type }}">{{ type }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
-                        <div class="form-floating mb-4">
-                            <input class="form-control" type="text" id="weather_description" name="weather_description" placeholder="weather_description" required>
+                        <p style="margin:20px;"></p>
+                        <div class="form-group">
                             <label for="weather_description">Weather Description</label>
+                            <select class="form-control" id="weather_description" name="weather_description">
+                                {% for description in weather_description_options %}
+                                    <option value="{{ description }}">{{ description }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
+                        <p style="margin:30px;"></p>
                         <div class="form-floating mb-4">
                             <input class="form-control" type="number" id="traffic_volume" name="traffic_volume" placeholder="traffic_volume" required>
                             <label for="traffic_volume">Traffic Volume</label>

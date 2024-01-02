@@ -1,6 +1,9 @@
 import pandas as pd
 import pymysql
 from datetime import timedelta
+import shap
+import pandas as pd
+import numpy as np
 
 # Connect to the MySQL database
 connection = pymysql.connect(
@@ -94,7 +97,6 @@ date_time = df['date_time']
 # Drop 'date_time' column before scaling
 df = df.drop(columns=['date_time'])
 
-scaler = joblib.load('scaler2.joblib')
 # Check categories in encoder
 # print(scaler.get_feature_names_out())
 
@@ -108,6 +110,7 @@ df_scaled['date_time'] = date_time.values
 X = df_scaled.drop(columns=['date_time'])
 
 X = X.drop(target, axis=1)
+
 df = pd.concat([date_time, df], axis=1)
 
 # Function to append new row with updated lagged features
@@ -124,15 +127,16 @@ df_dynamic_forecast = X.copy()
 df_dynamic_forecast['forecasted_traffic_volume'] = np.nan
 
 # Number of steps to forecast
-forecast_steps = 500
+future_steps = 1
+will_forecasting = future_steps
 
-for i in range(forecast_steps):
+for i in range(will_forecasting):
     # Predict the traffic volume for the next time step
     current_prediction = model.predict(df_dynamic_forecast.iloc[i:i+1].drop(columns=['forecasted_traffic_volume']))[0]
     df_dynamic_forecast.at[df_dynamic_forecast.index[i], 'forecasted_traffic_volume'] = current_prediction
 
     # Append a new row with updated lagged features for the next prediction, if not at the last step
-    if i + 1 < forecast_steps:
+    if i + 1 < will_forecasting:
         df_dynamic_forecast = append_new_row(df_dynamic_forecast, current_prediction)
 
 # Initialize the DataFrame
@@ -142,30 +146,79 @@ test_date_times = df['date_time'].reset_index(drop=True)
 df_result = pd.DataFrame({
     'date_time': test_date_times,
     'actual_traffic_volume': y.reset_index(drop=True),
-    'traffic_volume_lag_1': np.nan,
-    'traffic_volume_lag_2': np.nan,
-    'traffic_volume_lag_3': np.nan,
+    'new_traffic_volume_lag_1': np.nan,
+    'new_traffic_volume_lag_2': np.nan,
+    'new_traffic_volume_lag_3': np.nan,
     'forecasted_traffic_volume': df_dynamic_forecast['forecasted_traffic_volume'].reset_index(drop=True)
 })
 
 # Set the initial lagged values from the historical data
-df_result.loc[0, 'traffic_volume_lag_1'] = df_raw.iloc[-4]['traffic_volume']  # Most recent record
-df_result.loc[0, 'traffic_volume_lag_2'] = df_raw.iloc[-5]['traffic_volume']  # Second most recent record
-df_result.loc[0, 'traffic_volume_lag_3'] = df_raw.iloc[-6]['traffic_volume']  # Third most recent record
+df_result.loc[0, 'new_traffic_volume_lag_1'] = df_raw.iloc[-4]['traffic_volume']  # Most recent record
+df_result.loc[0, 'new_traffic_volume_lag_2'] = df_raw.iloc[-5]['traffic_volume']  # Second most recent record
+df_result.loc[0, 'new_traffic_volume_lag_3'] = df_raw.iloc[-6]['traffic_volume']  # Third most recent record
 
-# # Update the lagged values with the forecasted values in each step
-# for i in range(1, len(df_result)):
-#     df_result.loc[i, 'traffic_volume_lag_1'] = df_result.loc[i - 1, 'actual_traffic_volume']
-#     df_result.loc[i, 'traffic_volume_lag_2'] = df_result.loc[i - 1, 'traffic_volume_lag_1']
-#     df_result.loc[i, 'traffic_volume_lag_3'] = df_result.loc[i - 1, 'traffic_volume_lag_2']
+# Update the lagged values with the forecasted values in each step
+for i in range(1, len(df_result)):
+    df_result.loc[i, 'new_traffic_volume_lag_1'] = df_result.loc[i - 1, 'forecasted_traffic_volume']
+    df_result.loc[i, 'new_traffic_volume_lag_2'] = df_result.loc[i - 1, 'new_traffic_volume_lag_1']
+    df_result.loc[i, 'new_traffic_volume_lag_3'] = df_result.loc[i - 1, 'new_traffic_volume_lag_2']
 
-# for i in range(1, len(df_result)):
-#     if pd.isna(df_result.loc[i, 'date_time']):
-#         df_result.loc[i, 'date_time'] = df_result.loc[i-1, 'date_time'] + pd.Timedelta(hours=1)
+for i in range(1, len(df_result)):
+    if pd.isna(df_result.loc[i, 'date_time']):
+        df_result.loc[i, 'date_time'] = df_result.loc[i-1, 'date_time'] + pd.Timedelta(hours=1)
 
-# df_result.dropna(inplace=True)
+df_result = pd.concat([X, df_result], axis=1)
 
-# # Display the DataFrame
-print(df_raw.columns)
+actual_traffic_volume = df_result['actual_traffic_volume']
+
+columns_to_drop = ['date_time', 'actual_traffic_volume', 'traffic_volume_lag_1', 'traffic_volume_lag_2', 'traffic_volume_lag_3', 'forecasted_traffic_volume']
+df_result = df_result.drop(columns=columns_to_drop)
+
+df_result.rename(columns={
+    'new_traffic_volume_lag_1': 'traffic_volume_lag_1',
+    'new_traffic_volume_lag_2': 'traffic_volume_lag_2',
+    'new_traffic_volume_lag_3': 'traffic_volume_lag_3',
+}, inplace=True)
 
 
+features_from_training = scaler.feature_names_in_
+dummy_df = pd.DataFrame(0, index=np.arange(len(df_result)), columns=features_from_training)
+
+columns_to_scale = ['traffic_volume_lag_1', 'traffic_volume_lag_2', 'traffic_volume_lag_3']
+dummy_df[columns_to_scale] = df_result[columns_to_scale]
+
+scaled_dummy_df = scaler.transform(dummy_df)
+
+df_result[columns_to_scale] = scaled_dummy_df[:, dummy_df.columns.get_indexer(columns_to_scale)]
+
+# If the model expects a specific format (like NumPy array), convert df_result accordingly
+X_to_predict = df_result  # Convert to NumPy array if necessary
+
+
+# Get the feature names expected by the model
+expected_feature_names = model.get_booster().feature_names
+
+# Reorder the columns in X_to_predict to match the expected order
+X_to_predict = X_to_predict.reindex(columns=expected_feature_names)
+
+# Step 2: Make predictions
+predictions = model.predict(X_to_predict)
+
+# Step 3: Handle the predictions
+# You can store these predictions in a DataFrame, display them, or use them as needed
+df_result['predicted_traffic_volume'] = predictions
+
+df_result = pd.concat([actual_traffic_volume, df_result], axis=1)
+print(df_result)
+
+
+# # Create a SHAP Tree Explainer for the XGBoost model
+# explainer = shap.TreeExplainer(joblib.load(model))
+
+# # Calculate SHAP values - this might take some time for larger datasets
+# shap_values = explainer.shap_values(X)
+
+# shap.initjs()
+
+# # Force plot for a single prediction
+# shap.force_plot(explainer.expected_value, shap_values[0, :], X.iloc[0, :])

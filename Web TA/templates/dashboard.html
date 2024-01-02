@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Traffic Volume Chart -->
+    <br></br>
+    <h1 class="mb-4">Traffic Volume Chart - Last 24 Hours</h1>
+    <canvas id="trafficChart" width="800" height="400"></canvas>
+
+    <!-- Forecast Table -->
+    <br></br>
+    <h1 class="mb-4">Forecast</h1>
+    <table border="1" class="excel-table">
+        <thead>
+            <tr>
+                <th>Date and Time</th>
+                <th>Actual Traffic Volume</th>
+                <th>Traffic 1 Hour Ago</th>
+                <th>Traffic 2 Hours Ago</th>
+                <th>Traffic 3 Hours Ago</th>
+                <th>Forecasted Traffic Volume</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in prediction_result %}
+                <tr>
+                    <td>{{ row['date_time'] }}</td>
+                    <td>{{ row['actual_traffic_volume'] }}</td>
+                    <td>{{ row['lag_1'] }}</td>
+                    <td>{{ row['lag_2'] }}</td>
+                    <td>{{ row['lag_3'] }}</td>
+                    <td>{{ row['forecasted_traffic_volume'] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Forecast Chart -->
+    <br></br>
+    <div style="width: 100%;">
+        <canvas id="forecastChart" width="800" height="400"></canvas>
+    </div>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Traffic Volume Chart
+        var trafficChartData = {{ chart_data|tojson|safe }};
+        var trafficChartLabels = trafficChartData.map(entry => entry[0]);
+        var trafficChartDataPoints = trafficChartData.map(entry => entry[1]);
+
+        var trafficCtx = document.getElementById('trafficChart').getContext('2d');
+        var trafficChart = new Chart(trafficCtx, {
+            type: 'line',
+            data: {
+                labels: trafficChartLabels,
+                datasets: [{
+                    label: 'Traffic Volume',
+                    data: trafficChartDataPoints,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Forecast Chart
+        var forecastLabels = {{ prediction_labels | tojson | safe }};
+        var forecastValues = {{ prediction_values | tojson | safe }};
+
+        var forecastCtx = document.getElementById('forecastChart').getContext('2d');
+        var forecastChart = new Chart(forecastCtx, {
+            type: 'line',
+            data: {
+                labels: forecastLabels,
+                datasets: [{
+                    label: 'Forecasted Traffic Volume',
+                    data: forecastValues,
+                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

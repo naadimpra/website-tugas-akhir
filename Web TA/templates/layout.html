@@ -13,12 +13,19 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     {% block table_styles %}
     <style>
+        .logo {
+            display: block;
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+        }        
         .bg-custom {
-            background-color: #444445 !important;
+            background-color: #383c44 !important;
         }
     
         .sb-sidenav-dark {
-            background-color: #444445 !important;
+            background-color: #383c44 !important;
         }
     
         .excel-table {
@@ -40,7 +47,6 @@
             text-decoration: none;
         }
     
-        /* Adjustments for pagination */
         .pagination {
             display: inline-flex;
             align-items: center;
@@ -50,8 +56,8 @@
         .pagination a,
         .pagination-button {
             margin-right: 5px;
-            text-decoration: none; /* Ensure consistent styling */
-            padding: 5px; /* Ensure consistent padding */
+            text-decoration: none;
+            padding: 5px;
         }
     
         .pagination-text {
@@ -89,6 +95,20 @@
         .filter-button {
             padding: 5px;
         }
+        .sb-sidenav-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            background-color: transparent;
+        }
+        
+        .logo {
+            display: block;
+            width: 100px;
+            margin: 30px auto;
+        }        
         @media screen and (max-width: 768px) {
             .sb-sidenav {
                 width: 250px;
@@ -98,7 +118,7 @@
                 left: -250px;
                 height: 100vh;
                 overflow-y: auto;
-                background-color: #444445; /* Adjust background color if needed */
+                background-color: #444445;
                 transition: left 0.3s ease;
             }
         
@@ -119,8 +139,8 @@
             }
     
         .sb-topnav .btn-link {
-            color: #fff; /* Adjust color if needed */
-            margin-right: 10px; /* Space between button and brand */
+            color: #fff;
+            margin-right: 10px;
         }
     </style>
     {% endblock %}
@@ -133,7 +153,9 @@
         </button>
 
         <!-- Navbar Brand-->
-        <a class="navbar-brand ps-3" href=".">Traffic Forecasting</a>
+        <a class="navbar-brand ps-0" href=".">
+            <img src="{{ url_for('static', filename='img/head.svg') }}" alt="Logo" class="logo">
+        </a>
         <!-- Rest of the navbar content -->
     </nav>
 
@@ -144,11 +166,11 @@
                     <div class="nav">
                         <!-- Sidebar Content -->
                         <div class="sb-sidenav-menu-heading">Core</div>
-                        <a class="nav-link" href="chart">
+                        <a class="nav-link" href=".">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
-                        <a class="nav-link" href=".">
+                        <a class="nav-link" href="table">
                             <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                             Table
                         </a>
@@ -156,15 +178,19 @@
                             <div class="sb-nav-link-icon"><i class="fas fa-plus"></i></div>
                             Insert new Data
                         </a>
-                        <a class="nav-link" href="predict">
-                            <div class="sb-nav-link-icon"><i class="fas fa-chart-line"></i></div>
-                            Forecast
-                        </a>
                         <a class="nav-link" href="xai">
                             <div class="sb-nav-link-icon"><i class="fas fa-question-circle"></i></div>
-                            XAI
+                            SHAP
+                        </a>
+                        <a class="nav-link" href="lime">
+                            <div class="sb-nav-link-icon"><i class="fas fa-question-circle"></i></div>
+                            LIME
                         </a>
                         <!-- Add more sidebar items here -->
+                        <div class="sb-sidenav-footer">
+                            <img src="{{ url_for('static', filename='img/logo 1.png') }}" alt="Logo 1" class="logo">
+                            <img src="{{ url_for('static', filename='img/logo 2.png') }}" alt="Logo 2" class="logo">
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -178,13 +204,13 @@
             <footer class="py-4 bg-light mt-auto">
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small">
-                        <div class="text-muted">Copyright &copy; Your Website 2023. All Rights Reserved.</div>
+                        <div class="text-muted">Copyright &copy; ML XAI Traffic Forecasting 2024. All Rights Reserved.</div>
                         <div>
-                            <a href="https://www.yourwebsite.com/privacy-policy">Privacy Policy</a>
+                            <a href=".">Privacy Policy</a>
                             &middot;
-                            <a href="https://www.yourwebsite.com/terms-conditions">Terms & Conditions</a>
+                            <a href=".">Terms & Conditions</a>
                             &middot;
-                            <a href="https://www.yourwebsite.com/contact-us">Contact Us</a>
+                            <a href="https://www.its.ac.id/it">Contact Us</a>
                         </div>
                     </div>
                 </div>
